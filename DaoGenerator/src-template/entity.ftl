@@ -22,6 +22,10 @@ along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
 <#assign complexTypes = ["String", "ByteArray", "Date"]/>
 package ${entity.javaPackage};
 
+<#if entity.implParcelable>
+import android.os.Parcel;
+import android.os.Parcelable;
+</#if>
 <#if entity.toManyRelations?has_content>
 import java.util.List;
 </#if>
@@ -278,6 +282,48 @@ ${property.javaDocSetter}
         myDao.refresh(this);
     }
 
+</#if>
+
+<#if entity.implParcelable>
+    //Parcelable
+    protected ${entity.className} (Parcel in) {
+        <#list entity.properties as property>
+        <#if property.parcelableTypeInEntity == "Boolean">
+        ${property.propertyName} = in.readByte() != 0;
+        <#else>
+        ${property.propertyName} = in.read${property.parcelableTypeInEntity}();
+        </#if>
+        </#list>
+    }
+
+    public static final Creator<${entity.className}> CREATOR = new Creator<${entity.className}>() {
+        @Override
+        public ${entity.className} createFromParcel(Parcel in) {
+            return new ${entity.className}(in);
+        }
+
+        @Override
+        public ${entity.className}[] newArray(int size) {
+            return new ${entity.className}[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        <#list entity.properties as property>
+        <#if property.parcelableTypeInEntity == "Boolean">
+        dest.writeByte((byte) (${property.propertyName} ? 1 : 0));
+        <#else>
+        dest.write${property.parcelableTypeInEntity}(${property.propertyName});
+        </#if>
+        </#list>
+    }
+    //Parcelable END
 </#if>
 <#if entity.hasKeepSections>
     // KEEP METHODS - put your custom methods here

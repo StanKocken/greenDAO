@@ -75,6 +75,8 @@ public class Entity {
     private Boolean active;
     private Boolean hasKeepSections;
 
+    private boolean implParcelable;
+
     Entity(Schema schema, String className) {
         this.schema = schema;
         this.className = className;
@@ -91,6 +93,14 @@ public class Entity {
         interfacesToImplement = new ArrayList<String>();
         contentProviders = new ArrayList<ContentProvider>();
         constructors = true;
+    }
+
+    public void setImplParcelable(boolean impl){
+        implParcelable = impl;
+    }
+
+    public boolean getImplParcelable(){
+        return implParcelable;
     }
 
     public PropertyBuilder addBooleanProperty(String propertyName) {
@@ -437,6 +447,9 @@ public class Entity {
     }
 
     public List<String> getInterfacesToImplement() {
+        if(implParcelable && !interfacesToImplement.contains("Parcelable")){
+            interfacesToImplement.add("Parcelable");
+        }
         return interfacesToImplement;
     }
 
